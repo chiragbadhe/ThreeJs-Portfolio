@@ -1,21 +1,118 @@
 import Head from "next/head";
-import { Suspense } from "react";
-import { Canvas, useLoader } from "@react-three/fiber";
+import { Suspense, useRef, useEffect, useState } from "react";
+import { Canvas, useLoader, useFrame } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import Xbot from "@/components/Xbot";
+import * as THREE from "three";
+import { useAnimations } from "@react-three/drei";
+
+const useKeyPress = (targetKey) => {
+  const [keyPressed, setKeyPressed] = useState(false);
+
+  const downHandler = ({ key }) => {
+    if (key === targetKey) {
+      setKeyPressed(true);
+    }
+  };
+
+  const upHandler = ({ key }) => {
+    if (key === targetKey) {
+      setKeyPressed(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", downHandler);
+    window.addEventListener("keyup", upHandler);
+
+    return () => {
+      window.removeEventListener("keydown", downHandler);
+      window.removeEventListener("keyup", upHandler);
+    };
+  }, [downHandler, upHandler]);
+
+  return keyPressed;
+};
 
 const ModelHouse = () => {
   const gltf = useLoader(GLTFLoader, "/models/city.glb");
 
   return (
     <>
-      <primitive object={gltf.scene} scale={0.1} />
+      <primitive object={gltf.scene} scale={0.09} position={[0, -0.09, 0]} />
     </>
   );
 };
 
+const Soldier = () => {
+  const gltf = useLoader(GLTFLoader, "/models/soldier.glb");
+  const soldierRef = useRef();
+  const { actions, mixer } = useAnimations(gltf.animations, soldierRef);
+  const [moving, setMoving] = useState(false);
+
+  const handleKeyDown = (event) => {
+    switch (event.code) {
+      case "ArrowUp":
+        actions["Walk"].play();
+        setMoving(true);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    switch (event.code) {
+      case "ArrowUp":
+        actions["Idle"].play();
+        setMoving(false);
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleKeyDown, handleKeyUp]);
+
+  useFrame((state, delta) => {
+    if (moving) {
+      const speed = 0.1;
+      const forward = new THREE.Vector3(0, 0, -0.1);
+      const direction = new THREE.Vector3();
+      direction
+        .subVectors(
+          soldierRef.current.position,
+          new THREE.Vector3(0, soldierRef.current.position.y, 0)
+        )
+        .normalize();
+      direction.applyQuaternion(soldierRef.current.quaternion);
+      direction.multiplyScalar(speed * delta);
+      soldierRef.current.position.add(direction);
+    }
+  });
+
+  return (
+    <primitive
+      object={gltf.scene}
+      scale={0.1}
+      ref={soldierRef}
+      position={[0, -0.09, 0]}
+      castShadow
+      receiveShadow
+    />
+  );
+};
+
 export default function Home() {
+  const groundRef = useRef();
+
   return (
     <div>
       <Head>
@@ -33,21 +130,24 @@ export default function Home() {
         >
           <ambientLight intensity={5} />
           <spotLight
-            intensity={30}
-            angle={20}
+            intensity={0.4}
+            angle={10}
             penumbra={1}
-            position={[30, 15, 10]}
+            position={[40, 15, 10]}
             castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
           />
+
           <Suspense fallback={null}>
             <ModelHouse />
-            <Environment preset="city" />
+            <Soldier />
           </Suspense>
           <OrbitControls
             minDistance={1} // set the minimum distance to 2 units
             maxDistance={5} // set the maximum distance to 5 units
             maxPolarAngle={Math.PI / 2 - 0.05} // set the minimum angle to 45 degrees
-            minPolarAngle={Math.PI / 4 }
+            minPolarAngle={Math.PI / 4}
             enablePan={false}
             // enableDamping={true}
           />
