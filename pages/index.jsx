@@ -49,10 +49,6 @@ const ModelHouse = () => {
 const Soldier = () => {
   const gltf = useLoader(GLTFLoader, "/models/soldier.glb");
   const soldierRef = useRef();
-
-  soldierRef.current = soldier.scene;
-  soldier.scene.position.y = -0.5; // Set y-coordinate to -0.5
-
   const { actions, mixer } = useAnimations(gltf.animations, soldierRef);
   const [moving, setMoving] = useState(false);
   const [turningLeft, setTurningLeft] = useState(false);
@@ -122,14 +118,14 @@ const Soldier = () => {
     const angle = soldierRef.current.rotation.y;
     direction.copy(forward).applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
     direction.multiplyScalar(speed * delta);
-
+  
     if (turningLeft) {
       soldierRef.current.rotation.y += delta * 3;
     }
     if (turningRight) {
       soldierRef.current.rotation.y -= delta * 3;
     }
-
+  
     if (moving) {
       const newPos = soldierRef.current.position.clone().add(direction);
       // Check if the new position is within the boundaries
@@ -139,20 +135,21 @@ const Soldier = () => {
         soldierRef.current.position.copy(newPos);
       }
     }
-
+  
     mixer.update(delta);
-
+  
+    
     // Define camera offset vector
     const cameraOffset = new THREE.Vector3(0.3, 0.4, 1);
     // Rotate camera offset vector to match soldier's rotation
     cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
     // Calculate camera position
-    const cameraPosition = soldierRef.current.position
-      .clone()
-      .add(cameraOffset);
+    const cameraPosition = soldierRef.current.position.clone().add(cameraOffset);
     state.camera.position.copy(cameraPosition);
     state.camera.lookAt(soldierRef.current.position);
   });
+  
+  
 
   return (
     <primitive
