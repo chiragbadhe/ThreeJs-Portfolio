@@ -6,6 +6,7 @@ import { Environment, OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as THREE from "three";
 import { useAnimations } from "@react-three/drei";
+import { useDrag } from "react-use-gesture";
 
 const useKeyPress = (targetKey) => {
   const [keyPressed, setKeyPressed] = useState(false);
@@ -48,12 +49,15 @@ const ModelHouse = () => {
 const Soldier = () => {
   const gltf = useLoader(GLTFLoader, "/models/soldier.glb");
   const soldierRef = useRef();
+
+  soldierRef.current = soldier.scene;
+  soldier.scene.position.y = -0.5; // Set y-coordinate to -0.5
+
   const { actions, mixer } = useAnimations(gltf.animations, soldierRef);
   const [moving, setMoving] = useState(false);
   const [turningLeft, setTurningLeft] = useState(false);
   const [turningRight, setTurningRight] = useState(false);
   const [TurningBack, setTurningBack] = useState(null);
-
 
   const handleKeyDown = (event) => {
     switch (event.code) {
@@ -138,7 +142,11 @@ const Soldier = () => {
 
     mixer.update(delta);
 
-    const cameraOffset = new THREE.Vector3(0.4, 0.7, 1);
+    // Define camera offset vector
+    const cameraOffset = new THREE.Vector3(0.3, 0.4, 1);
+    // Rotate camera offset vector to match soldier's rotation
+    cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+    // Calculate camera position
     const cameraPosition = soldierRef.current.position
       .clone()
       .add(cameraOffset);
