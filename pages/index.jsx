@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Head from "next/head";
 import { Suspense, useRef, useEffect, useState } from "react";
 import { Canvas, useLoader, useFrame } from "@react-three/fiber";
@@ -49,12 +50,28 @@ const Soldier = () => {
   const soldierRef = useRef();
   const { actions, mixer } = useAnimations(gltf.animations, soldierRef);
   const [moving, setMoving] = useState(false);
+  const [turningLeft, setTurningLeft] = useState(false);
+  const [turningRight, setTurningRight] = useState(false);
+  const [TurningBack, setTurningBack] = useState(null);
+
 
   const handleKeyDown = (event) => {
     switch (event.code) {
       case "ArrowUp":
-        actions["Walk"].play();
+        actions["Run"].play();
         setMoving(true);
+        break;
+      case "ArrowLeft":
+        actions["Walk"].play();
+        setTurningLeft(true);
+        break;
+      case "ArrowRight":
+        actions["Walk"].play();
+        setTurningRight(true);
+        break;
+      case "ArrowDown":
+        actions["Walk"].play();
+        setTurningBack(true);
         break;
       default:
         break;
@@ -64,9 +81,22 @@ const Soldier = () => {
   const handleKeyUp = (event) => {
     switch (event.code) {
       case "ArrowUp":
+        actions["Run"].stop();
         actions["Idle"].play();
         setMoving(false);
         break;
+      case "ArrowLeft":
+        actions["Walk"].stop();
+        setTurningLeft(false);
+        break;
+      case "ArrowRight":
+        actions["Walk"].stop();
+        setTurningRight(false);
+        break;
+      case "ArrowDown":
+        setTurningBack(false);
+        actions["Run"].play();
+        setMoving(false);
       default:
         break;
     }
@@ -82,28 +112,46 @@ const Soldier = () => {
   }, [handleKeyDown, handleKeyUp]);
 
   useFrame((state, delta) => {
-    if (moving) {
-      const speed = 0.1;
-      const forward = new THREE.Vector3(0, 0, -0.1);
-      const direction = new THREE.Vector3();
-      direction
-        .subVectors(
-          soldierRef.current.position,
-          new THREE.Vector3(0, soldierRef.current.position.y, 0)
-        )
-        .normalize();
-      direction.applyQuaternion(soldierRef.current.quaternion);
-      direction.multiplyScalar(speed * delta);
-      soldierRef.current.position.add(direction);
+    const speed = 1;
+    const forward = new THREE.Vector3(0, 0, -1);
+    const direction = new THREE.Vector3();
+    const angle = soldierRef.current.rotation.y;
+    direction.copy(forward).applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+    direction.multiplyScalar(speed * delta);
+
+    if (turningLeft) {
+      soldierRef.current.rotation.y += delta * 3;
     }
+    if (turningRight) {
+      soldierRef.current.rotation.y -= delta * 3;
+    }
+
+    if (moving) {
+      const newPos = soldierRef.current.position.clone().add(direction);
+      // Check if the new position is within the boundaries
+      if (newPos.x < -5 || newPos.x > 5 || newPos.z < -5 || newPos.z > 5) {
+        setMoving(false);
+      } else {
+        soldierRef.current.position.copy(newPos);
+      }
+    }
+
+    mixer.update(delta);
+
+    const cameraOffset = new THREE.Vector3(0.4, 0.7, 1);
+    const cameraPosition = soldierRef.current.position
+      .clone()
+      .add(cameraOffset);
+    state.camera.position.copy(cameraPosition);
+    state.camera.lookAt(soldierRef.current.position);
   });
 
   return (
     <primitive
       object={gltf.scene}
-      scale={0.1}
+      scale={0.17}
       ref={soldierRef}
-      position={[0, -0.09, 0]}
+      position={[1, -0.09, -4]}
       castShadow
       receiveShadow
     />
@@ -126,7 +174,7 @@ export default function Home() {
           className="bg-blue-500"
           shadows
           dpr={[1, 2]}
-          camera={{ position: [1.8, 0.7, 3.5], fov: 50 }}
+          camera={{ position: [2, 0.7, 3.5], fov: 50 }}
         >
           <ambientLight intensity={5} />
           <spotLight
@@ -144,6 +192,7 @@ export default function Home() {
             <Soldier />
           </Suspense>
           <OrbitControls
+            false
             minDistance={1} // set the minimum distance to 2 units
             maxDistance={5} // set the maximum distance to 5 units
             maxPolarAngle={Math.PI / 2 - 0.05} // set the minimum angle to 45 degrees
