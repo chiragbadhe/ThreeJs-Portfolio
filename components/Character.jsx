@@ -130,7 +130,7 @@ const Character = () => {
     mixer.update(delta);
 
     // Define camera offset vector
-    const cameraOffset = new THREE.Vector3(0.3, 0.4, 1);
+    const cameraOffset = new THREE.Vector3(0.2, 0.4, 1);
     // Rotate camera offset vector to match character's rotation
     cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1.1, 0), angle);
     // Calculate camera position
