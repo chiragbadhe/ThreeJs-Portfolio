@@ -7,6 +7,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as THREE from "three";
 import { useAnimations } from "@react-three/drei";
 import { useDrag } from "react-use-gesture";
+import Robot from "@/components/Robot";
 
 const useKeyPress = (targetKey) => {
   const [keyPressed, setKeyPressed] = useState(false);
@@ -55,22 +56,28 @@ const Soldier = () => {
   const [turningRight, setTurningRight] = useState(false);
   const [TurningBack, setTurningBack] = useState(null);
 
+  const forestWalk = new Audio("/sounds/forest-walk.mp3");
+
   const handleKeyDown = (event) => {
     switch (event.code) {
       case "ArrowUp":
         actions["Run"].play();
         setMoving(true);
+        // forestWalk.play(); // pause the forestWalk sound
         break;
       case "ArrowLeft":
         actions["Walk"].play();
+        // forestWalk.play();
         setTurningLeft(true);
         break;
       case "ArrowRight":
         actions["Walk"].play();
+        forestWalk.play();
         setTurningRight(true);
         break;
       case "ArrowDown":
         actions["Walk"].play();
+        // forestWalk.play();
         setTurningBack(true);
         break;
       default:
@@ -83,8 +90,10 @@ const Soldier = () => {
       case "ArrowUp":
         actions["Run"].stop();
         actions["Idle"].play();
+        forestWalk.pause(); // pause the forestWalk sound
         setMoving(false);
         break;
+
       case "ArrowLeft":
         actions["Walk"].stop();
         setTurningLeft(false);
@@ -94,8 +103,8 @@ const Soldier = () => {
         setTurningRight(false);
         break;
       case "ArrowDown":
+        actions["Idle"].play();
         setTurningBack(false);
-        actions["Run"].play();
         setMoving(false);
       default:
         break;
@@ -118,14 +127,14 @@ const Soldier = () => {
     const angle = soldierRef.current.rotation.y;
     direction.copy(forward).applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
     direction.multiplyScalar(speed * delta);
-  
+
     if (turningLeft) {
       soldierRef.current.rotation.y += delta * 3;
     }
     if (turningRight) {
       soldierRef.current.rotation.y -= delta * 3;
     }
-  
+
     if (moving) {
       const newPos = soldierRef.current.position.clone().add(direction);
       // Check if the new position is within the boundaries
@@ -135,21 +144,20 @@ const Soldier = () => {
         soldierRef.current.position.copy(newPos);
       }
     }
-  
+
     mixer.update(delta);
-  
-    
+
     // Define camera offset vector
     const cameraOffset = new THREE.Vector3(0.3, 0.4, 1);
     // Rotate camera offset vector to match soldier's rotation
     cameraOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
     // Calculate camera position
-    const cameraPosition = soldierRef.current.position.clone().add(cameraOffset);
+    const cameraPosition = soldierRef.current.position
+      .clone()
+      .add(cameraOffset);
     state.camera.position.copy(cameraPosition);
     state.camera.lookAt(soldierRef.current.position);
   });
-  
-  
 
   return (
     <primitive
@@ -181,20 +189,14 @@ export default function Home() {
           dpr={[1, 2]}
           camera={{ position: [2, 0.7, 3.5], fov: 50 }}
         >
-          <ambientLight intensity={5} />
-          <spotLight
-            intensity={0.4}
-            angle={10}
-            penumbra={1}
-            position={[40, 15, 10]}
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-          />
+          <spotLight intensity={0.4} angle={10} penumbra={1} />
 
           <Suspense fallback={null}>
             <ModelHouse />
             <Soldier />
+            <ambientLight intensity={0.7}>
+              <Robot />{" "}
+            </ambientLight>
           </Suspense>
           <OrbitControls
             false
