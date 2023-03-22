@@ -18,22 +18,19 @@ Open your web browser and navigate to http://localhost:3000
 ## Usage ##
 To control the soldier using the keyboard, use the following keys:
 
-`Up Arrow`: Move forward 
-
-`Down Arrow`: Move backward
- 
-`Left Arrow`: Turn left
-
-`Right Arrow`: Turn right
+`Up Arrow`: Move forward <br />
+`Down Arrow`: Move backward<br />
+`Left Arrow`: Turn left<br />
+`Right Arrow`: Turn right<br />
 
 You can also interact with other elements on the page using your mouse or touch screen.
 
 Technologies Used
 This portfolio was built using the following technologies:
 
-`Three.js` - a JavaScript library used to create and display 3D graphics in a web browser
-`Next.js` - a React-based framework used to build server-rendered web applications
-`Tailwind CSS` - a utility-first CSS framework used to style the portfolio
+`Three.js` - a JavaScript library used to create and display 3D graphics in a web browser <br />
+`Next.js` - a React-based framework used to build server-rendered web applications<br />
+`Tailwind CSS` - a utility-first CSS framework used to style the portfolio<br />
 ## Credits
 The 3D model of the soldier used in this portfolio was created by Mixamo, a website that provides a large collection of 3D characters and animations for use in video games and other projects.
 
