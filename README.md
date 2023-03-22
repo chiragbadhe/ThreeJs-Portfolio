@@ -1,4 +1,4 @@
-# Personal Portfolio
+# Personal Portfolio (In Progress ..)
 
 This is my personal portfolio built using Three.js, Next.js and Tailwind CSS. The portfolio features a 3D model of a soldier that can be controlled with the keyboard.
 
