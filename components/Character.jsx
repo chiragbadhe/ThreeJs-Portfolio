@@ -146,7 +146,7 @@ const Character = () => {
       object={gltf.scene}
       scale={0.17}
       ref={characterRef}
-      position={[2, -0.09, -4]}
+      position={[0.3, -0.09, 1.6]}
       castShadow
       receiveShadow
     />

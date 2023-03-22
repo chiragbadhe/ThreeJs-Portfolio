@@ -6,6 +6,7 @@ import { OrbitControls } from "@react-three/drei";
 import Robot from "@/components/Robot";
 import Character from "@/components/Character";
 import BaseModel from "@/components/BaseModel";
+// import SoldierControls from "@/components/Joystick"
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
             <ambientLight intensity={0.7}>
               <Robot />{" "}
             </ambientLight>
+            {/* <SoldierControls /> */}
           </Suspense>
           <OrbitControls
             false
